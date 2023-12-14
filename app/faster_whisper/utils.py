@@ -83,4 +83,4 @@ class WriteJSON(ResultWriter):
     extension: str = "json"
 
     def write_result(self, result: dict, file: TextIO):
-        json.dump(result, file)
+        json.dump(result, file, ensure_ascii=False)

@@ -94,7 +94,7 @@ def write_result(
         WriteTSV(ResultWriter).write_result(result, file=file)
     elif output == "json":
         WriteJSON(ResultWriter).write_result(result, file=file)
-    elif output == "txt":
+    elif output == "text":
         WriteTXT(ResultWriter).write_result(result, file=file)
     else:
         return 'Please select an output method!'

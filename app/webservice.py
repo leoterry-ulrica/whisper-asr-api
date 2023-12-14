@@ -5,7 +5,7 @@ from typing import BinaryIO, Union, Annotated
 
 import ffmpeg
 import numpy as np
-from fastapi import FastAPI, File, UploadFile, Query, applications
+from fastapi import FastAPI, File, UploadFile, Query, applications, Form
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.responses import StreamingResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -62,18 +62,18 @@ async def index():
 @app.post("/v1/audio/transcriptions", tags=["Audio"], summary="Create transcription")
 async def asr(
         file: UploadFile = File(...),
-        model: Union[str, None] = Query(default="whisper-1"),
-        encode: bool = Query(default=True, description="Encode audio first through ffmpeg"),
-        task: Union[str, None] = Query(default="transcribe", enum=["transcribe", "translate"]),
-        language: Union[str, None] = Query(default="zh", enum=LANGUAGE_CODES),
-        prompt: Union[str, None] = Query(default=None),
-        vad_filter: Annotated[bool | None, Query(
+        model: Union[str, None] = Form(default="whisper-1"),
+        encode: bool = Form(default=True, description="Encode audio first through ffmpeg"),
+        task: Union[str, None] = Form(default="transcribe", enum=["transcribe", "translate"]),
+        language: Union[str, None] = Form(None, enum=LANGUAGE_CODES),
+        prompt: Union[str, None] = Form(default=None),
+        vad_filter: Annotated[bool | None, Form(
                 description="Enable the voice activity detection (VAD) to filter out parts of the audio without speech",
                 include_in_schema=(True if ASR_ENGINE == "faster_whisper" else False)
             )] = False,
-        word_timestamps: bool = Query(default=False, description="Word level timestamps"),
-        temperature: float = Query(default=0.8, description="The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."),
-        response_format: Union[str, None] = Query(default="json", enum=["txt", "vtt", "srt", "tsv", "json"])
+        word_timestamps: bool = Form(default=False, description="Word level timestamps"),
+        temperature: float = Form(default=0, description="Defaults to 0.The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."),
+        response_format: Union[str, None] = Form(default="json", enum=["text", "vtt", "srt", "tsv", "json"])
 ):
     result = transcribe(load_audio(file.file, encode), task, language, prompt, vad_filter, word_timestamps, temperature, response_format) 
     if response_format == "json":
@@ -81,7 +81,7 @@ async def asr(
     else :
         return StreamingResponse(
         result,
-        media_type="text/plain",
+        media_type="text/plain; charset=utf-8",
         headers={
             'Asr-Engine': ASR_ENGINE,
             'Content-Disposition': f'attachment; filename="{file.filename}.{response_format}"'
@@ -90,7 +90,7 @@ async def asr(
 @app.post("/v1/audio/detect-language", tags=["Audio"], summary="Detect language")
 async def detect_language(
         audio_file: UploadFile = File(...),
-        encode: bool = Query(default=True, description="Encode audio first through ffmpeg")
+        encode: bool = Form(default=True, description="Encode audio first through ffmpeg")
 ):
     detected_lang_code = language_detection(load_audio(audio_file.file, encode))
     return {"detected_language": tokenizer.LANGUAGES[detected_lang_code], "language_code": detected_lang_code}
