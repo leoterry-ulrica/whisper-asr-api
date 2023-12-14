@@ -38,14 +38,16 @@ def transcribe(
         initial_prompt: Union[str, None],
         vad_filter: Union[bool, None],
         word_timestamps: Union[bool, None],
+        temperature: Union[float, None],
         output,
 ):
     options_dict = {"task": task}
+    options_dict["temperature"] = temperature
     if language:
         options_dict["language"] = language
     if initial_prompt:
         options_dict["initial_prompt"] = initial_prompt
-    if word_timestamps:
+    if vad_filter:
         options_dict["vad_filter"] = True
     if word_timestamps:
         options_dict["word_timestamps"] = True
