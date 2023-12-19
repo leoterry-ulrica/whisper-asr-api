@@ -1,0 +1,37 @@
+version: "3.4"
+
+services:
+  whisper-asr-webservice-gpu:
+    build:
+      context: .
+      dockerfile: Dockerfile.gpu
+    image: onerahmet/openai-whisper-asr-webservice:latest-gpu
+    container_name: faster-whisper-gpu
+    restart: always
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    environment:
+      # 直接指定本地模型路径，避免自动去huggingface下载
+      - ASR_MODEL=/mnt/llm/models/faster-whisper-large-v3
+      - ASR_ENGINE=faster_whisper
+      # 模型默认载根目录
+      - ASR_MODEL_PATH=/data/whisper
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./app:/app/app
+      - /mnt/llm/models:/data/whisper
+      - cache-pip:/root/.cache/pip
+      - cache-poetry:/root/.cache/poetry
+      - cache-whisper:/root/.cache/whisper
+
+volumes:
+  cache-pip:
+  cache-poetry:
+  cache-whisper:
+  cache-faster-whisper:

@@ -27,6 +27,12 @@ docker run -d -p 9000:9000 -e ASR_MODEL=base -e ASR_ENGINE=openai_whisper onerah
 docker run -d --gpus all -p 9000:9000 -e ASR_MODEL=base -e ASR_ENGINE=openai_whisper onerahmet/openai-whisper-asr-webservice:latest-gpu
 ```
 
+### GPU-docker-compose
+
+```sh
+docker-compose -f docker-compose.gpu.tys.yml up -d
+```
+
 for more information:
 
 - [Documentation/Run](https://ahmetoner.github.io/whisper-asr-webservice/run)
